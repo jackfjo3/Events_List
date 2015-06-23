@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+
+   <head>
+      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.17/angular.min.js"></script>
+      <script type="text/javascript" src="jquery-1.8.1.min.js"></script>        
+      <script type="text/javascript" src="jquery-ui-1.8.23.custom.min.js"></script>
+      <link href="bootstrap.css" rel="stylesheet">
+      <link href="style.css" rel="stylesheet">
+
+      <script >angular.module('eventsApp', [])
+	.controller('EventsController', ['$http', '$scope', function($http, $scope) {
+
+		var url = "http://localhost:3000/events?callback=JSON_CALLBACK";
+  		
+		var refresh = function() {
+			$scope.edit = true;
+			$http.get(url).success(function(data){
+		            	console.log(data);
+		                $scope.events = data;
+		            });
+				
+		        };
+
+		this.toggle = function(event) {
+			if($scope.selected==event)
+				$scope.selected = null;
+			else $scope.selected = event;
+		}
+
+		this.select = function(event) {
+			$scope.edit=false;
+			$scope.selected = event;
+		}
+
+		this.selected = function(event) {
+			return $scope.selected == event;
+		}
+
+		this.toggleEdit = function() {
+			$scope.edit = !$scope.edit;
+		}
+
+
+
+		refresh();
+
+
+	}]);</script>
+   </head>
+   <body>
+   	<div class="col-xs-12">
+	<div ng-app="eventsApp" ng-controller="EventsController as event">
+
+	    <div ng-repeat="e in events">
+	    	<div class="event" ng-click="event.select(e)">
+		    	<h1>{{e.title}}</h1>
+		    	<div ng-if="selected==e" class="current">
+		    		<button ng-if="!edit" ng-click="event.toggleEdit()">Edit</button>
+			    	<div ng-if="!edit">
+				    	<p  class = "description">{{e.description}}</p>
+				    	<ul>
+				    		<li class="from"><b>From:</b> {{e.from}}</li>
+				    		<li class="to"><b>To:</b> {{e.to}}</li>
+				    	</ul>
+				    	<p class="location">{{e.location}}</p>
+				    	<ul class="participants" >
+				    		<b>Participants:</b>
+				    		<li ng-repeat="p in e.participants">
+				    		{{p}}
+				    		</li>
+				    	</ul>
+			    	</div>
+			    	<div ng-if="edit">
+			    		<form class="eventedit">
+			    			<input type="text" ng-model = "e.title"><br>
+					    	<input type="text"  ng-model = "e.description">
+					    	<ul>
+					    		<li class="from"><b>From:</b><input type="text"  ng-model = "e.from"></li>
+					    		<li class="to"><b>To:</b><input type="text"  ng-model = "e.to"></li>
+					    	</ul>
+					    	<ul class="participants" >
+					    		<b>Participants:</b>
+					    		<li ng-repeat="p in e.participants">
+					    		{{p}}
+					    		</li>
+					    	</ul>
+				    	</form>
+			    	</div>
+		    	</div>
+	    	</div>
+	    </div>
+	</div>
+	</div>
+
+<!--
+	    <div class="event_form">
+	    	Title:<input type="text" ng-model="title" />
+	    	Description:<input type="textarea" ng-model="description" />
+	    	<ul>
+	    		<input type="date" ng-model="from" />
+	    		<input type="date" ng-model="to" />
+	    	</ul>
+	    	<input type="text" ng-model="location" />
+	    	<input type="text" ng-model="participants" />
+	      <button ng-cick="submit">Save</button>
+	    </div>-->
+
+	</div>
+	</body>
+</html>

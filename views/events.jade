@@ -1,0 +1,15 @@
+extends layout
+
+block content
+	h1.
+		Event List
+	ul
+		each event, i in events
+			li
+				h2=event.title
+				h3=event._id
+				p=event.description
+				p=event.location
+				p=event.from
+				p=event.to
+

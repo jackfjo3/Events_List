@@ -1,0 +1,99 @@
+/* Style sheet for Set Game window. */
+/* Kyle Rush */
+
+html, body { margin: 0; padding: 0; }
+
+
+
+p {
+  margin: 0;
+}
+
+ul {
+list-style-type: none;
+}
+
+.row {
+  margin: 0;
+}
+
+.events {
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.event h1 {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  font-size: 23px;
+}
+
+.event {
+  color: #000;
+  background: #FFC;
+  border-spacing: 2px;
+  border-color: gray;
+  font-family: arial,sans-serif;
+  border-bottom: 1px #e5e5e5 solid;
+}
+
+.event #current{
+  background: #FFC;
+}
+
+.item {
+  padding-top: 7px;
+  padding-bottom: 7px;
+  
+}
+
+.item .source {
+  margin-left: 20px;
+}
+
+
+.item .title {
+  font-weight: bold;
+}
+
+.item .pubdate {
+  margin-right: 20px;
+}
+
+.item .pubdate {
+  text-align: right;  
+}
+
+.description {
+  display: none;
+  background-color: #EBF4FF;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.description h1 {
+  margin-top: 0px;
+  font-size: 18px;
+}
+.clearfix:after {
+   content: ".";
+   display: block;
+   clear: both;
+   visibility: hidden;
+   line-height: 0;
+   height: 0;
+}
+ 
+.clearfix {
+   display: inline-block;
+}
+ 
+html[xmlns] .clearfix {
+   display: block;
+}
+ 
+* html .clearfix {
+   height: 1%;
+   overflow: visible;
+}
+
