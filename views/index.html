@@ -7,63 +7,166 @@
       <script type="text/javascript" src="jquery-ui-1.8.23.custom.min.js"></script>
       <link href="bootstrap.css" rel="stylesheet">
       <link href="style.css" rel="stylesheet">
+      <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 
-      <script >angular.module('eventsApp', [])
-	.controller('EventsController', ['$http', '$scope', function($http, $scope) {
+      <script >
+		var app = angular.module("eventsApp", []);
 
-		var url = "http://localhost:3000/events?callback=JSON_CALLBACK";
-  		
-		var refresh = function() {
-			$scope.edit = true;
-			$http.get(url).success(function(data){
-		            	console.log(data);
-		                $scope.events = data;
+		app.directive('myDatepicker', function ($parse) {
+		    return function (scope, element, attrs, controller) {
+		        var ngModel = $parse(attrs.ngModel);
+		        $(function(){
+		            $(element).datepicker({
+		               showOn:"both",
+                		changeYear:true,
+                		changeMonth:true,
+                		dateFormat:'ISO_8601',
+		               onSelect:function (dateText, inst) {
+		                    scope.$apply(function(scope){
+		                        // Change binded variable
+		                        ngModel.assign(scope, dateText);
+		                    });
+		               }
 		            });
+		        });
+		    }
+		});
+
+		app.service('EventService', ['$http', function($http) {
+	        var url = 'http://localhost:3000/';
+	        
+	            this.get= function(eventId) {
+	                return $http.get(url + 'events/' + eventId)
+	                .success(function(data) {
+	                	console.log(data);
+	                });
+	            },
+	            this.save= function(eventObj) {
+	                var url = url + 'newevent/';
+	                return $http.post(url, eventObj);
+	            },
+	            this.search= function(keyword) {
+	                return $http.get(url + 'searchevents/' + keyword);
+	            }
+	           
+		    }
+		]);
+
+	      
+		app.controller('EventsController', ['$http', '$scope', function($http, $scope) {
+
+			var url = "http://localhost:3000/";
+			var callback = "?callback=JSON_CALLBACK";
+	  		
+			var refresh = function() {
+				$scope.addingEvent = false;
 				
-		        };
+				$http.get(url+'events'+callback).success(function(data){
+			            	console.log(data);
+			                $scope.events = data;
+			            });
+					
+			        }
 
-		this.toggle = function(event) {
-			if($scope.selected==event)
-				$scope.selected = null;
-			else $scope.selected = event;
-		}
+			this.toggleSelect = function(event) {
+				if($scope.selected==event)
+					$scope.selected = null;
+				else $scope.selected = event;
+			}
 
-		this.select = function(event) {
-			$scope.edit=false;
-			$scope.selected = event;
-		}
+			this.select = function(event) {
+				//$scope.edit=event;
+				$scope.selected = event;
+			}
 
-		this.selected = function(event) {
-			return $scope.selected == event;
-		}
+			this.selected = function(event) {
+				return $scope.selected == event;
+			}
 
-		this.toggleEdit = function() {
-			$scope.edit = !$scope.edit;
-		}
+			this.toggleEdit = function(event) {
+				if($scope.edit==event)
+					$scope.edit = null;
+				else $scope.edit = event;
+			}
+			
+
+			this.search = function() {
+				//console.log(EventService.search($scope.searchInput)));
+			}
+
+			this.save = function(){
+				$scope.selected = $scope.edit;
+				var data = JSON.stringify($scope.edit, ['title', 'description', 'participants', 'from', 'to', 'location', '_id']);
+				console.log(data);
+				$http.put(url+'events/'+$scope.edit._id+callback, data).success(function(data){
+						$scope.edit = null;
+			            	//refresh();
+			            });
+				console.log($scope.edit._id);
+				
+
+			}
+			this.addParticipant = function() {
+				if($scope.edit.participants === null || $scope.edit.participants === undefined) 
+					$scope.edit.participants = ['New Participant'];
+				else $scope.edit.participants.push('New Participant');
+			}
+
+			this.addParticipantToNew = function(){
+				if($scope.newEvent.participants === null || $scope.newEvent.participants === undefined) 
+					$scope.newEvent.participants = ['New Participant'];
+				else $scope.newEvent.participants.push('New Participant');
+			}
+
+			this.deleteParticipant = function(index) {
+				$scope.edit.participants.splice(index,1);
+			}
+
+			this.deleteParticipantFromNew = function(newIndex) {
+				$scope.newEvent.participants.splice(index,1);
+			}
+
+
+			this.addNewEvent = function() {
+				$scope.addingEvent = true;
+
+			}
+
+			this.saveNew = function() {
+				$http.post(url+'newevent/'+callback, $scope.newEvent).success(function(data){
+						console.log("Succesful post");
+			            });
+				$scope.addingEvent = false;
+			}
 
 
 
-		refresh();
 
+			refresh();
+		}]);
 
-	}]);</script>
+	</script>
+
    </head>
    <body>
    	<div class="col-xs-12">
 	<div ng-app="eventsApp" ng-controller="EventsController as event">
-
+		<div class="search">
+			<input type="text" ng-model="searchInput">
+			<!--<button ng-click="event.search()">Search</button>-->
+		</div>
 	    <div ng-repeat="e in events">
 	    	<div class="event" ng-click="event.select(e)">
 		    	<h1>{{e.title}}</h1>
 		    	<div ng-if="selected==e" class="current">
-		    		<button ng-if="!edit" ng-click="event.toggleEdit()">Edit</button>
-			    	<div ng-if="!edit">
-				    	<p  class = "description">{{e.description}}</p>
+		    		<button ng-click="event.toggleEdit(e)">Edit</button>
+			    	<div ng-if="e!=edit">
+				    	<p  class = "description">Description:{{e.description}}</p>
 				    	<ul>
-				    		<li class="from"><b>From:</b> {{e.from}}</li>
-				    		<li class="to"><b>To:</b> {{e.to}}</li>
+				    		<li class="from"><b>From:</b> {{e.from | date:'medium'}}</li>
+				    		<li class="to"><b>To:</b> {{e.to | date:'medium'}}</li>
 				    	</ul>
-				    	<p class="location">{{e.location}}</p>
+				    	<p class="location">Location:{{e.location}}</p>
 				    	<ul class="participants" >
 				    		<b>Participants:</b>
 				    		<li ng-repeat="p in e.participants">
@@ -71,25 +174,53 @@
 				    		</li>
 				    	</ul>
 			    	</div>
-			    	<div ng-if="edit">
+			    	<div ng-if="e==edit">
 			    		<form class="eventedit">
-			    			<input type="text" ng-model = "e.title"><br>
-					    	<input type="text"  ng-model = "e.description">
+			    			<input type="text" ng-model = "edit.title"><br>
+					    	<input type="text"  ng-model = "edit.description">
 					    	<ul>
-					    		<li class="from"><b>From:</b><input type="text"  ng-model = "e.from"></li>
-					    		<li class="to"><b>To:</b><input type="text"  ng-model = "e.to"></li>
+					    		<li class="from"><b>From:</b><input type="text" my-datepicker ng-model = "edit.from"></li>
+					    		<li class="to"><b>To:</b><input type="text" my-datepicker ng-model = "edit.to"></li>
 					    	</ul>
+					    	<input type="text"  ng-model = "edit.description">
 					    	<ul class="participants" >
 					    		<b>Participants:</b>
-					    		<li ng-repeat="p in e.participants">
-					    		{{p}}
+					    		<li ng-repeat="p in edit.participants track by $index">
+					    			<input type="text" ng-model="edit.participants[$index]">
+					    			<button ng-click="event.deleteParticipant($index)" >X</button>
 					    		</li>
+					    		<button ng-click="event.addParticipant()">Add Participant</button>
 					    	</ul>
+					    	<button ng-click="event.save()">Save</button>
 				    	</form>
 			    	</div>
+
+			    	
 		    	</div>
+
+
 	    	</div>
 	    </div>
+
+				<form class="addevent" ng-if="addingEvent">
+	    			<input type="text" ng-model = "newEvent.title" placeholder="Title"><br>
+			    	<input type="text"  ng-model = "newEvent.description" placeholder="Description">
+			    	<ul>
+			    		<li class="from"><b>From:</b><input type="text"  my-datepicker ng-model = "newEvent.from"></li>
+			    		<li class="to"><b>To:</b><input type="text"  my-datepicker ng-model = "newEvent.to"></li>
+			    	</ul>
+			    	<input type="text"  ng-model = "newEvent.description">
+			    	<ul class="participants" >
+			    		<b>Participants:</b>
+			    		<li ng-repeat="p in newEvent.participants track by $newIndex">
+			    			<input type="text" ng-model="newEvent.participants[$newIndex]">
+			    			<button ng-click="event.deleteParticipantFromNew($newIndex)" >X</button>
+			    		</li>
+			    		<button ng-click="event.addParticipantToNew()">Add Participant</button>
+			    	</ul>
+			    	<button ng-click="event.saveNew()">Save</button>
+		    	</form>
+	    <button ng-click="event.addNewEvent()" class = "newEventButton">Add Event</button>
 	</div>
 	</div>
 

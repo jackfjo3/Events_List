@@ -97,16 +97,16 @@ router.put('/events/:id', function(req, res) {
 	var db = req.db;
     var id = req.params.id;
     console.log('Updating event: ' + id);
-    console.log(JSON.stringify(wine));
+    console.log(JSON.stringify(req.body));
     var collection = db.get('events');
         
-    collection.update({'_id':new BSON.ObjectID(id)}, req.body, function(err, result) {
+    collection.update({'_id':id}, req.body, function(err, result) {
         if (err) {
             console.log('Error updating event: ' + err);
             res.send({'error':'An error has occurred'});
         } else {
             console.log('' + result + ' document(s) updated');
-            res.send(wine);
+            res.send(req.body);
         }
     });
 });

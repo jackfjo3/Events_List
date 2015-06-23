@@ -2,7 +2,16 @@
 /* Kyle Rush */
 
 html, body { margin: 0; padding: 0; }
-
+.ui-datepicker {
+    width: 216px;
+    height: auto;
+    margin: 5px auto 0;
+    font: 9pt Arial, sans-serif;
+    -webkit-box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, .5);
+    -moz-box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, .5);
+    box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, .5);
+    background-color: #FFF;
+}
 
 
 p {
@@ -65,16 +74,10 @@ list-style-type: none;
 }
 
 .description {
-  display: none;
-  background-color: #EBF4FF;
   padding-top: 10px;
   padding-bottom: 10px;
 }
 
-.description h1 {
-  margin-top: 0px;
-  font-size: 18px;
-}
 .clearfix:after {
    content: ".";
    display: block;
