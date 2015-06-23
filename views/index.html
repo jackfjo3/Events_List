@@ -3,14 +3,15 @@
 
    <head>
       <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.17/angular.min.js"></script>
-      <script type="text/javascript" src="jquery-1.8.1.min.js"></script>        
+      <script type="text/javascript" src="jquery-1.8.1.min.js"></script> 
+      <script type="text/javascript" src="angucomplete.js"></script>         
       <script type="text/javascript" src="jquery-ui-1.8.23.custom.min.js"></script>
       <link href="bootstrap.css" rel="stylesheet">
       <link href="style.css" rel="stylesheet">
       <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 
       <script >
-		var app = angular.module("eventsApp", []);
+		var app = angular.module("eventsApp", ["angucomplete"]);
 
 		app.directive('myDatepicker', function ($parse) {
 		    return function (scope, element, attrs, controller) {
@@ -20,16 +21,31 @@
 		               showOn:"both",
                 		changeYear:true,
                 		changeMonth:true,
-                		dateFormat:'ISO_8601',
+                		dateFormat:'mm-dd-yy',
 		               onSelect:function (dateText, inst) {
 		                    scope.$apply(function(scope){
-		                        // Change binded variable
 		                        ngModel.assign(scope, dateText);
 		                    });
 		               }
 		            });
 		        });
 		    }
+		});
+
+		app.directive('autoComplete', function() {
+		  return {
+		    restrict: 'A',
+		    link: function(scope, elem) {
+		      // Invoke jQuery autocomplete to rebind the the list of suggestions every time the product list changes
+		      scope.$watch(function() {
+		        return scope.eventTitles;
+		      }, function() {
+		        $(elem).autocomplete({
+		          source: scope.eventTitles
+		        });
+		      });
+		    }
+		  };
 		});
 
 		app.service('EventService', ['$http', function($http) {
@@ -55,9 +71,10 @@
 	      
 		app.controller('EventsController', ['$http', '$scope', function($http, $scope) {
 
+
 			var url = "http://localhost:3000/";
 			var callback = "?callback=JSON_CALLBACK";
-	  		
+	  		$scope.events = [];
 			var refresh = function() {
 				$scope.addingEvent = false;
 				
@@ -67,6 +84,18 @@
 			            });
 					
 			        }
+			refresh();
+
+			$scope.searchChar = '';
+			$scope.product_list = [];
+			$scope.eventTitles = [];
+			for(var i = 0; i < $scope.events.length; i++) $scope.eventsTitles.push(scope.events[i].title);
+			$scope.autoComplete = function() {
+		    // Sample code to demonstrate autocompletion suggestions (i.e. in lieu of HTTP request)
+		    $scope.eventTitles = $scope.eventTitles.filter(function(e) {
+		      return e.indexOf($scope.searchChar) !== -1;
+		    });
+		}
 
 			this.toggleSelect = function(event) {
 				if($scope.selected==event)
@@ -86,12 +115,30 @@
 			this.toggleEdit = function(event) {
 				if($scope.edit==event)
 					$scope.edit = null;
-				else $scope.edit = event;
+				else {
+					$scope.edit = event;
+					var d = new Date($scope.edit.from);
+					$scope.fromdate = d;
+					$scope.fromtime = d;
+					d = new Date($scope.edit.to);
+					$scope.todate = d;
+					$scope.totime = d;
+				}
 			}
 			
 
-			this.search = function() {
-				//console.log(EventService.search($scope.searchInput)));
+			this.search = function(search) {
+				$http.get(url+'searchevents/'+search+callback).success(function(data){
+					console.log(data);
+						$scope.events = data;
+			            });
+			}
+
+			this.searchPartial = function(search) {
+				$http.get(url+'searcheventspartial/'+search+callback).success(function(data){
+					console.log(data);
+						$scope.events = data;
+			            });
 			}
 
 			this.save = function(){
@@ -139,11 +186,71 @@
 				$scope.addingEvent = false;
 			}
 
+			
+
+			$scope.$watch('searchInput', function() {
+				if($scope.searchInput===''||$scope.searchInput===null||$scope.searchInput==undefined)
+					refresh();
+		        else {
+		        	$http.get(url+'searcheventspartial/'+$scope.searchInput+callback).success(function(data){
+					console.log(data);
+						$scope.events = data;
+			            });
+		        }
+		    });
+		    
+			$scope.$watch('fromDate', function() {
+		       tryCombineFromDateTime(); 
+		    });
+
+		    $scope.$watch('fromTime', function() {
+		       tryCombineFromDateTime();
+		    });
+
+		    $scope.$watch('toDate', function() {
+		       tryCombineToDateTime(); 
+		    });
+
+		    $scope.$watch('toTime', function() {
+		       tryCombineToDateTime();
+		    });
+
+		     function tryCombineFromDateTime() {
+		        if($scope.fromdate && $scope.fromtime) {
+		            var dateParts = $scope.fromdate.split('-');
+		            var timeParts = $scope.fromtime.split(':');
+
+		            if(dateParts && timeParts) {
+		                dateParts[1] -= 1;
+		                $scope.fullFromDate = new Date(Date.UTC.apply(undefined,dateParts.concat(timeParts))).toISOString();
+		                $scope.edit.to = $scope.fullFromDate;
+		            }
+		        }
+		    }
+
+		    function tryCombineToDateTime() {
+		        if($scope.todate && $scope.totime) {
+		            var dateParts = $scope.todate.split('-');
+		            var timeParts = $scope.totime.split(':');
+
+		            if(dateParts && timeParts) {
+		                dateParts[1] -= 1;
+		                $scope.fullToDate = new Date(Date.UTC.apply(undefined,dateParts.concat(timeParts))).toISOString();
+		                $scope.edit.to = $scope.fullToDate;
+		            }
+		        }
+		    }
 
 
+
+		
+		    
+		   
 
 			refresh();
 		}]);
+
+  
 
 	</script>
 
@@ -152,10 +259,12 @@
    	<div class="col-xs-12">
 	<div ng-app="eventsApp" ng-controller="EventsController as event">
 		<div class="search">
-			<input type="text" ng-model="searchInput">
-			<!--<button ng-click="event.search()">Search</button>-->
+			<input type="text" ng-change="searchPartial(searchInput)" auto-complete ng-model="searchInput">
+
+			<button ng-click="event.search(searchInput)">Search</button>
 		</div>
-	    <div ng-repeat="e in events">
+		<ul class="eventsList">
+	    <li ng-repeat="e in events">
 	    	<div class="event" ng-click="event.select(e)">
 		    	<h1>{{e.title}}</h1>
 		    	<div ng-if="selected==e" class="current">
@@ -179,8 +288,11 @@
 			    			<input type="text" ng-model = "edit.title"><br>
 					    	<input type="text"  ng-model = "edit.description">
 					    	<ul>
-					    		<li class="from"><b>From:</b><input type="text" my-datepicker ng-model = "edit.from"></li>
-					    		<li class="to"><b>To:</b><input type="text" my-datepicker ng-model = "edit.to"></li>
+					    		<li class="from"><b>From:</b><input type="text" my-datepicker ng-model = "fromdate">
+					    		<input type="time" ng-model="fromdate" class="time">
+					    		</li>
+					    		<li class="to"><b>To:</b><input type="text" my-datepicker ng-model = "todate"></li>
+					    		<input type="time" ng-model="todate" class="time">
 					    	</ul>
 					    	<input type="text"  ng-model = "edit.description">
 					    	<ul class="participants" >
@@ -200,7 +312,8 @@
 
 
 	    	</div>
-	    </div>
+	    </li>
+	</ul>
 
 				<form class="addevent" ng-if="addingEvent">
 	    			<input type="text" ng-model = "newEvent.title" placeholder="Title"><br>

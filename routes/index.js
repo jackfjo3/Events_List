@@ -31,14 +31,24 @@ router.get('/newevent', function(req, res) {
     res.render('newevent', { title: 'Add New Event' });
 });
 
-router.get('/searchevents/:keyword', function(req, res) {
+router.get('/searcheventspartial/:keyword', function(req, res) {
 	var db = req.db;
     var keyword = req.params.keyword;
     var collection = db.get('events');
     console.log('Searching events with keyword: ' + keyword);
-	collection.find({'$text':{'$search':keyword}}, {}, function(err, item) {
+	collection.find({'title': new RegExp("^"+keyword, 'i')}, {}, function(err, item) {
 		res.send(item);
-        
+    });
+
+});
+
+router.get('/searchevents/:keyword', function(req, res) {
+    var db = req.db;
+    var keyword = req.params.keyword;
+    var collection = db.get('events');
+    console.log('Searching events with keyword: ' + keyword);
+    collection.find({'title': new RegExp(keyword, 'i')}, {}, function(err, item) {
+        res.send(item);
     });
 
 });
@@ -49,35 +59,7 @@ router.post('/newevent', function(req, res) {
     // Set our internal DB variable
     var db = req.db;
 
-    // Get our form values. These rely on the "name" attributes
-    var eventTitle = req.body.eventtitle;
-    var eventDesc = req.body.eventdescription;
-    var eventLocation = req.body.eventlocation;
-    var eventFrom = req.body.eventfrom;
-    var eventTo = req.body.eventto;
-    var eventParticipants = req.body.eventparticipants;
-
-    // Set our collection
-    var collection = db.get('events');
-
-    // Submit to the DB
-    /*collection.insert({
-        "title" : eventTitle,
-        "description" : eventDescription,
-        "location": eventLocation,
-        "from:": eventFrom,
-        "to": eventTo,
-        "participants": eventParticipants
-    }, function (err, doc) {
-        if (err) {
-            // If it failed, return error
-            res.send("There was a problem adding the information to the database.");
-        }
-        else {
-            // And forward to success page
-            res.redirect("events");
-        }
-    });*/
+    
 
 	collection.insert(req.body, function (err, doc) {
         if (err) {

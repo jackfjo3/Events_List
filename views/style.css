@@ -12,10 +12,32 @@ html, body { margin: 0; padding: 0; }
     box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, .5);
     background-color: #FFF;
 }
-
-
-p {
-  margin: 0;
+.eventsList ul {
+  list-style-type: none;
+  width: 500px;
+}
+ 
+.eventsList h3 {
+  font: bold 20px/1.5 Helvetica, Verdana, sans-serif;
+}
+ 
+.eventsList li img {
+  float: left;
+  margin: 0 15px 0 0;
+}
+ 
+.eventsList li p {
+  font: 200 12px/1.5 Georgia, Times New Roman, serif;
+}
+ 
+.eventsList li {
+  padding: 10px;
+  overflow: auto;
+}
+ 
+.eventsList li:hover {
+  background: #eee;
+  cursor: pointer;
 }
 
 ul {
@@ -35,19 +57,6 @@ list-style-type: none;
   margin-top: 0px;
   margin-bottom: 0px;
   font-size: 23px;
-}
-
-.event {
-  color: #000;
-  background: #FFC;
-  border-spacing: 2px;
-  border-color: gray;
-  font-family: arial,sans-serif;
-  border-bottom: 1px #e5e5e5 solid;
-}
-
-.event #current{
-  background: #FFC;
 }
 
 .item {
