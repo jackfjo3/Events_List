@@ -256,17 +256,24 @@
 
    </head>
    <body>
-   	<div class="col-xs-12">
 	<div ng-app="eventsApp" ng-controller="EventsController as event">
+
+<div class="navbar navbar-default">
+	<div class="container-fluid">
+		<div class="logo">Events List</div>
 		<div class="search">
 			<input type="text" ng-change="searchPartial(searchInput)" auto-complete ng-model="searchInput">
 
 			<button ng-click="event.search(searchInput)">Search</button>
 		</div>
+	</div>
+</div>
+
+<div class="col-xs-12">
 		<ul class="eventsList">
 	    <li ng-repeat="e in events">
-	    	<div class="event" ng-click="event.select(e)">
-		    	<h1>{{e.title}}</h1>
+	    	<div class="event">
+		    	<h3 ng-click="event.toggleSelect(e)">{{e.title}}</h1>
 		    	<div ng-if="selected==e" class="current">
 		    		<button ng-click="event.toggleEdit(e)">Edit</button>
 			    	<div ng-if="e!=edit">

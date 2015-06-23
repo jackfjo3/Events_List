@@ -1,17 +1,35 @@
 /* Style sheet for Set Game window. */
 /* Kyle Rush */
 
+
 html, body { margin: 0; padding: 0; }
 .ui-datepicker {
-    width: 216px;
-    height: auto;
     margin: 5px auto 0;
-    font: 9pt Arial, sans-serif;
+    font: Helvetica, sans-serif;
     -webkit-box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, .5);
     -moz-box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, .5);
     box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, .5);
     background-color: #FFF;
 }
+
+.logo {
+  float: left;
+  margin-right: 10px;
+  font-size: 1.7em;
+  color: black;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+  padding-top: 9px;
+  font-weight: bold;
+
+}
+
+.search {
+  float:right;
+  margin-top: 13px; 
+}
+
+
 .eventsList ul {
   list-style-type: none;
   width: 500px;
@@ -26,9 +44,6 @@ html, body { margin: 0; padding: 0; }
   margin: 0 15px 0 0;
 }
  
-.eventsList li p {
-  font: 200 12px/1.5 Georgia, Times New Roman, serif;
-}
  
 .eventsList li {
   padding: 10px;
